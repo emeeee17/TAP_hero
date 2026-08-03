@@ -3,175 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TAP Paint - Hero Section</title>
-    <!-- นำเข้าฟอนต์เพื่อความสวยงาม -->
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Scroll Random Color House</title>
     <style>
-        * {
-            box-sizing: border-box;
-        }
         body, html {
             margin: 0;
             padding: 0;
-            font-family: 'Kanit', sans-serif;
-            background-color: #111;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #111; /* พื้นหลังหน้าเว็บ */
         }
 
-        /* พื้นที่สำหรับ Scroll ให้มีระยะเลื่อน */
-        .scroll-track {
-            height: 250vh; /* ความยาวของการ Scroll เพื่อให้มีเวลาดูการเปลี่ยนสี */
+        /* Section แรก (พื้นที่สำหรับเลื่อนเติมสีบ้าน) */
+        .hero {
+            height: 150vh; /* ความยาวของการเลื่อน */
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            position: relative;
+            background-color: #f8f9fa;
+        }
+
+        /* กล่องที่จะเกาะติดหน้าจอ (Sticky) เวลาเราเลื่อนลง */
+        .sticky-container {
+            position: sticky;
+            top: 25vh; /* ระยะห่างจากขอบบน */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+        }
+
+        /* รูปร่างบ้าน */
+        .house-wrapper {
+            width: 200px;
+            height: 200px;
+            background-color: #ddd; /* สีของบ้านตอนที่ยังไม่มีสีเติม (สีเทา) */
+            /* ใช้ Clip-path ตัด Div ให้เป็นรูปทรงบ้าน */
+            clip-path: polygon(50% 0%, 100% 40%, 100% 100%, 0 100%, 0 40%);
             position: relative;
         }
 
-        /* Section Hero ที่จะล็อคติดหน้าจอขณะเลื่อน */
-        .hero-sticky {
-            position: sticky;
-            top: 0;
-            width: 100%;
-            height: 100vh; /* สูงเต็มจอ */
-            overflow: hidden;
-            background-color: #000;
-        }
-
-        /* จัดการรูปภาพให้อยู่ตรงกลาง ครอปส่วนล่าง (บรรได) ทิ้งถ้าจอกว้าง */
-        .hero-img {
+        /* สีที่จะถูกเติมขึ้นมาเรื่อยๆ ตามการเลื่อน */
+        .house-fill {
             position: absolute;
-            top: 0;
+            bottom: 0;
             left: 0;
             width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: top center; 
+            height: 0%; /* JS จะเป็นตัวควบคุมตรงนี้ */
+            background-color: #FF8C00; /* สีเริ่มต้น (จะถูกเขียนทับด้วย JS) */
+            transition: background-color 0.5s ease-in-out; /* ทำให้ตอนเปลี่ยนสีดูนุ่มนวล */
         }
 
-        /* เลเยอร์สีฐาน (สีแดง) */
-        #layer-base {
-            z-index: 1;
-        }
-
-        /* เลเยอร์สีใหม่ที่จะค่อยๆ โผล่มา */
-        #layer-reveal {
-            z-index: 2;
-            clip-path: inset(0 0 100% 0); /* ซ่อนรูปจากด้านล่าง 100% (มองไม่เห็นตอนแรก) */
-            will-change: clip-path; /* เพิ่มประสิทธิภาพการเรนเดอร์ */
-        }
-
-        /* ข้อความทับบนรูป */
-        .overlay-content {
-            position: absolute;
-            top: 50%;
-            left: 10%;
-            transform: translateY(-50%);
-            color: white;
-            z-index: 10;
-            text-shadow: 0px 4px 20px rgba(0,0,0,0.6);
-            pointer-events: none;
-        }
-        .overlay-content h1 {
-            font-size: clamp(3rem, 5vw, 6rem);
-            font-weight: 800;
-            margin: 0;
-            line-height: 1.1;
-            letter-spacing: -1px;
-        }
-        .overlay-content p {
-            font-size: clamp(1rem, 2vw, 1.5rem);
-            font-weight: 400;
-            margin-top: 10px;
-            opacity: 0.9;
-        }
-
-        /* Section เนื้อหาถัดไปของเว็บไซต์ */
-        .next-section {
+        /* Section ถัดไป หลังจากผ่านช่วงเติมสีบ้าน */
+        .content {
             height: 100vh;
-            background-color: #fafafa;
+            background-color: #222;
+            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #333;
-        }
-        .next-section h2 {
-            font-size: 3rem;
+            flex-direction: column;
         }
     </style>
 </head>
 <body>
 
-    <!-- Scroll Track Container -->
-    <div class="scroll-track" id="scrollTrack">
-        <div class="hero-sticky">
-            
-            <!-- Default Image (Red) -->
-            <img src="_h1_red.png" class="hero-img" id="layer-base" alt="Red House">
-            
-            <!-- Dynamic Reveal Image (Random Color) -->
-            <img src="" class="hero-img" id="layer-reveal" alt="Reveal House">
-
-            <!-- UI Text -->
-            <div class="overlay-content">
-                <h1>LIVE IN<br>COLORS</h1>
-                <p>เลื่อนลงเพื่อสัมผัสประสบการณ์การเปลี่ยนสี</p>
+    <!-- ส่วน Hero: ควบคุมการเติมสีบ้าน -->
+    <div class="hero" id="hero">
+        <div class="sticky-container">
+            <h1>เลื่อนลงเพื่อเติมสีบ้าน</h1>
+            <div class="house-wrapper">
+                <div class="house-fill" id="houseFill"></div>
             </div>
         </div>
     </div>
 
-    <!-- Dummy Section ต่อไป -->
-    <div class="next-section">
-        <h2>เนื้อหาเวปไซต์ส่วนถัดไป...</h2>
+    <!-- ส่วนเนื้อหาด้านล่าง -->
+    <div class="content" id="content">
+        <h2>พ้น Section Hero แล้ว!</h2>
+        <p style="color: #aaa;">ลองเลื่อนกลับขึ้นไปดูสิ บ้านจะเปลี่ยนเป็นสีใหม่ทันที</p>
     </div>
 
     <script>
-        const scrollTrack = document.getElementById('scrollTrack');
-        const layerReveal = document.getElementById('layer-reveal');
+        const houseFill = document.getElementById('houseFill');
+        const hero = document.getElementById('hero');
 
-        // อ้างอิงชื่อไฟล์ภาพในโฟลเดอร์เดียวกัน
-        const randomImages = [
-            "_h1_Blue.png",
-            "_h1_white.png",
-            "_h1_yellow.png"
+        // 1. ชุดสีที่ต้องการ (ใส่ส้ม กับ skyblue มาให้แล้วตามคำขอ)
+        const colors = [
+            '#FF8C00', // ส้ม (Orange)
+            '#87CEEB', // ฟ้า (Skyblue)
+            '#FF3366', // ชมพู
+            '#2ECC71', // เขียว
+            '#9B59B6', // ม่วง
+            '#F1C40F'  // เหลือง
         ];
 
-        let currentRevealIndex = -1;
-        let isAtTop = true;
+        let currentColor = ''; // เก็บค่าปัจจุบันเพื่อกันไม่ให้สุ่มได้สีเดิมซ้ำ
+        let wasPastHero = false;
+        let wasAtTop = true;
 
-        // ฟังก์ชันสำหรับสุ่มสีบ้าน
-        function setRandomRevealColor() {
-            let nextIndex;
-            // สุ่มจนกว่าจะไม่ได้สีเดิม (ในกรณีที่เลื่อนขึ้นลงหลายรอบ)
-            do {
-                nextIndex = Math.floor(Math.random() * randomImages.length);
-            } while (nextIndex === currentRevealIndex && randomImages.length > 1);
-            
-            currentRevealIndex = nextIndex;
-            layerReveal.src = randomImages[currentRevealIndex];
+        // ฟังก์ชันสุ่มสี (จะไม่สุ่มได้สีเดิมที่กำลังแสดงอยู่)
+        function setRandomColor() {
+            let availableColors = colors.filter(c => c !== currentColor);
+            currentColor = availableColors[Math.floor(Math.random() * availableColors.length)];
+            houseFill.style.backgroundColor = currentColor;
         }
 
-        // เซ็ตสีแบบสุ่มตั้งแต่ครั้งแรกที่เปิดเว็บ
-        setRandomRevealColor();
+        // เซ็ตสีเริ่มต้นทันทีที่โหลดหน้าเว็บ
+        setRandomColor();
 
-        // ดักจับการ Scroll
         window.addEventListener('scroll', () => {
-            const trackRect = scrollTrack.getBoundingClientRect();
-            
-            // คำนวณระยะการ Scroll ภายในพื้นที่ของ scroll-track (จะได้ค่าระหว่าง 0 ถึง 1)
-            const maxScrollableHeight = trackRect.height - window.innerHeight;
-            let scrollProgress = Math.abs(trackRect.top) / maxScrollableHeight;
+            let scrollY = window.scrollY;
 
-            // ป้องกันค่าเกินขอบเขต
-            if (scrollProgress < 0) scrollProgress = 0;
-            if (scrollProgress > 1) scrollProgress = 1;
+            // คำนวณระยะการเลื่อนที่จะให้สีเต็มพอดี
+            let scrollRange = hero.offsetHeight - window.innerHeight;
+            if (scrollRange < 100) scrollRange = hero.offsetHeight * 0.8;
 
-            // อัพเดต clip-path (ลดค่า inset ด้านล่างจาก 100% เหลือ 0% ตามการเลื่อน)
-            const insetBottom = 100 - (scrollProgress * 100);
-            layerReveal.style.clipPath = `inset(0 0 ${insetBottom}% 0)`;
+            // คำนวณ % การเลื่อน (ได้ค่า 0 ถึง 1)
+            let progress = scrollY / scrollRange;
 
-            // ตรรกะเช็คการเลื่อนกลับไปบนสุดเพื่อเปลี่ยนสีบ้านสำหรับรอบหน้า
-            if (scrollProgress === 0 && !isAtTop) {
-                isAtTop = true;
-                setRandomRevealColor(); // สุ่มสีใหม่เมื่อกลับถึงบนสุด
-            } else if (scrollProgress > 0) {
-                isAtTop = false;
+            // บังคับค่าให้อยู่ในช่วง 0 ถึง 1 เสมอ (แก้ปัญหาสีค้าง และคำนวณพลาด)
+            if (progress < 0) progress = 0;
+            if (progress > 1) progress = 1;
+
+            // สั่งเติมสีตาม % (แก้ปัญหาสีไม่เต็ม 100% ตอนเลื่อนไม่สุด เพราะตัวนี้มันซิงค์กับ Scroll แบบเป๊ะๆ)
+            houseFill.style.height = (progress * 100) + '%';
+
+            // เช็คสถานะปัจจุบัน
+            let isPastHero = progress >= 1; 
+            let isAtTop = scrollY <= 30; // ใช้ระยะเผื่อ 30px (แก้ปัญหาเลื่อนกลับขึ้นบนสุดแล้วไม่แรงพอ)
+
+            // ----------------------------------------------------
+            // ทริกเกอร์ 1: ตอนพ้น Section Hero ไปแล้ว และ "เลื่อนกลับขึ้นมา"
+            // ให้สุ่มสีใหม่ 100% ทันทีตามที่ขอ
+            // ----------------------------------------------------
+            if (wasPastHero && !isPastHero) {
+                setRandomColor();
             }
+
+            // ----------------------------------------------------
+            // ทริกเกอร์ 2: เลื่อนกลับมาถึงบนสุด (เผื่อระยะไว้แล้ว)
+            // รีเซ็ตเพื่อเตรียมสีใหม่เผื่อเคสที่เลื่อนลงไม่สุดแล้วตีกลับขึ้นบนสุด
+            // ----------------------------------------------------
+            if (!wasAtTop && isAtTop) {
+                setRandomColor();
+            }
+
+            // อัปเดตสถานะสำหรับรอบถัดไป
+            wasPastHero = isPastHero;
+            wasAtTop = isAtTop;
         });
     </script>
 </body>
