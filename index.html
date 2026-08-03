@@ -33,7 +33,7 @@
             background-color: #000;
         }
 
-        /* จัดการรูปภาพให้อยู่ตรงกลาง ครอปส่วนล่าง (บรรได) ทิ้งถ้าจอกว้าง */
+        /* จัดการรูปภาพให้อยู่ตรงกลาง */
         .hero-img {
             position: absolute;
             top: 0;
@@ -44,16 +44,16 @@
             object-position: top center; 
         }
 
-        /* เลเยอร์สีฐาน (สีแดง) */
+        /* เลเยอร์สีฐาน (สีที่จะโผล่ตอนเลื่อนกลับขึ้นไป) */
         #layer-base {
             z-index: 1;
         }
 
-        /* เลเยอร์สีใหม่ที่จะค่อยๆ โผล่มา */
+        /* เลเยอร์สีใหม่ที่จะโผล่ตอนเลื่อนลงมา */
         #layer-reveal {
             z-index: 2;
-            clip-path: inset(0 0 100% 0); /* ซ่อนรูปจากด้านล่าง 100% (มองไม่เห็นตอนแรก) */
-            will-change: clip-path; /* เพิ่มประสิทธิภาพการเรนเดอร์ */
+            clip-path: inset(0 0 100% 0); /* เริ่มต้นโดนซ่อน 100% */
+            will-change: clip-path;
         }
 
         /* ข้อความทับบนรูป */
@@ -97,14 +97,13 @@
 </head>
 <body>
 
-    <!-- Scroll Track Container -->
     <div class="scroll-track" id="scrollTrack">
         <div class="hero-sticky">
             
-            <!-- Default Image (Red) เป็นฐาน -->
-            <img src="_h1_red.png" class="hero-img" id="layer-base" alt="Red House">
+            <!-- เลเยอร์ฐาน (Default เป็นสีแดง) -->
+            <img src="_h1_red.png" class="hero-img" id="layer-base" alt="Base House">
             
-            <!-- Dynamic Reveal Image (กำหนดสีแรกเป็น Yellow ตามที่ขอ) -->
+            <!-- เลเยอร์เติมสี (เลื่อนลงครั้งแรกเป็นสีเหลือง) -->
             <img src="_h1_yellow.png" class="hero-img" id="layer-reveal" alt="Reveal House">
 
             <!-- UI Text -->
@@ -115,16 +114,16 @@
         </div>
     </div>
 
-    <!-- Dummy Section ต่อไป -->
     <div class="next-section">
         <h2>เนื้อหาเวปไซต์ส่วนถัดไป...</h2>
     </div>
 
     <script>
         const scrollTrack = document.getElementById('scrollTrack');
+        const layerBase = document.getElementById('layer-base');
         const layerReveal = document.getElementById('layer-reveal');
 
-        // อ้างอิงชื่อไฟล์ภาพตามที่ระบุมาทั้งหมด
+        // รายชื่อไฟล์ภาพทั้งหมด
         const randomImages = [
             "_h1_Blue.png",
             "_h1_orange.png",
@@ -134,28 +133,21 @@
             "_h1_yellow.png"
         ];
 
-        // กำหนดให้การเปลี่ยนสีครั้งแรกเป็นสีเหลือง
-        let currentRevealColor = "_h1_yellow.png";
         let isAtTop = true;
+        let isAtBottom = false;
 
-        // ฟังก์ชันสำหรับสุ่มสีบ้าน
-        function setRandomRevealColor() {
+        // ฟังก์ชันสุ่มสีใหม่ โดยบังคับว่าต้องไม่ซ้ำกับสีที่กำลังโชว์อยู่
+        function getNewColor(currentVisibleColor) {
             let nextColor;
-            // สุ่มจนกว่าจะไม่ได้สีเดิม (ในกรณีที่เลื่อนขึ้นลงหลายรอบ)
             do {
                 const randomIndex = Math.floor(Math.random() * randomImages.length);
                 nextColor = randomImages[randomIndex];
-            } while (nextColor === currentRevealColor);
-            
-            currentRevealColor = nextColor;
-            layerReveal.src = currentRevealColor;
+            } while (nextColor === currentVisibleColor); // สุ่มใหม่เรื่อยๆ ถ้าได้สีเดิม
+            return nextColor;
         }
 
-        // ดักจับการ Scroll
         window.addEventListener('scroll', () => {
             const trackRect = scrollTrack.getBoundingClientRect();
-            
-            // คำนวณระยะการ Scroll ภายในพื้นที่ของ scroll-track
             const maxScrollableHeight = trackRect.height - window.innerHeight;
             
             let scrollProgress = 0;
@@ -163,20 +155,35 @@
                 scrollProgress = Math.abs(trackRect.top) / maxScrollableHeight;
             }
 
-            // ปัดเศษให้ตอนเลื่อนขึ้นสุด/ลงสุดทำงานง่ายขึ้น สีจะได้ไม่ค้าง
+            // ปัดเศษให้สุดทาง เพื่อให้ระบบทริกเกอร์เปลี่ยนสีได้ 100% ไม่มีค้าง
             if (scrollProgress < 0.05) scrollProgress = 0;
             if (scrollProgress > 0.95) scrollProgress = 1;
 
-            // อัพเดต clip-path (ลดค่า inset ด้านล่างจาก 100% เหลือ 0% ตามการเลื่อน)
+            // ค่อยๆ โชว์เลเยอร์หน้าตามระยะการเลื่อน
             const insetBottom = 100 - (scrollProgress * 100);
             layerReveal.style.clipPath = `inset(0 0 ${insetBottom}% 0)`;
 
-            // ตรรกะเช็คการเลื่อนกลับไปบนสุดเพื่อเปลี่ยนสีบ้านสำหรับรอบหน้า
-            if (scrollProgress === 0 && !isAtTop) {
-                isAtTop = true;
-                setRandomRevealColor(); // สุ่มสีใหม่เมื่อกลับถึงบนสุด
-            } else if (scrollProgress > 0) {
+            // ตรรกะแอบสลับสีเลเยอร์ด้านหลัง (ทำงานเมื่อเลื่อนสุดทางเท่านั้น)
+            if (scrollProgress === 1) {
+                if (!isAtBottom) {
+                    isAtBottom = true;
+                    // ตอนเลื่อนลงล่างสุด ภาพที่เห็น 100% คือ layerReveal
+                    // เราต้องสุ่มสีใหม่ไปใส่ที่ layerBase เพื่อเตรียมไว้โชว์ตอนไถขึ้น!
+                    const currentVisible = layerReveal.getAttribute('src');
+                    layerBase.src = getNewColor(currentVisible);
+                }
+            } else if (scrollProgress === 0) {
+                if (!isAtTop) {
+                    isAtTop = true;
+                    // ตอนเลื่อนขึ้นบนสุด ภาพที่เห็น 100% คือ layerBase
+                    // เราต้องสุ่มสีใหม่ไปใส่ที่ layerReveal เพื่อเตรียมไว้โชว์ตอนไถลงครั้งต่อไป!
+                    const currentVisible = layerBase.getAttribute('src');
+                    layerReveal.src = getNewColor(currentVisible);
+                }
+            } else {
+                // ถ้าอยู่ระหว่างทาง (กำลังเปลี่ยนสี) รีเซ็ตสถานะ
                 isAtTop = false;
+                isAtBottom = false;
             }
         });
     </script>
