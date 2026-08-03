@@ -102,7 +102,7 @@
         <div class="hero-sticky">
             
             <!-- Default Image (Red) -->
-            <img src="https://drive.google.com/uc?export=view&id=1TFPGw1zYqqjKS6oT6D7CWJopW3WTiCh4" class="hero-img" id="layer-base" alt="Red House">
+            <img src="_h1_red.png" class="hero-img" id="layer-base" alt="Red House">
             
             <!-- Dynamic Reveal Image (Random Color) -->
             <img src="" class="hero-img" id="layer-reveal" alt="Reveal House">
@@ -124,11 +124,11 @@
         const scrollTrack = document.getElementById('scrollTrack');
         const layerReveal = document.getElementById('layer-reveal');
 
-        // ลิงก์รูปภาพที่แปลงเพื่อให้แสดงผลได้โดยตรง (Blue, White, Yellow)
+        // อ้างอิงชื่อไฟล์ภาพในโฟลเดอร์เดียวกัน
         const randomImages = [
-            "https://drive.google.com/uc?export=view&id=1Ha315_mb-8C2A9mW4QU7VNptXF5VO64R", // น้ำเงิน
-            "https://drive.google.com/uc?export=view&id=1dWbf2wqS0vzNfSAUgQi4ry3njYsbCODG", // ขาว
-            "https://drive.google.com/uc?export=view&id=1vDDyqSmq6pMY12SidO87xMFCX0BO9M1D"  // เหลือง
+            "_h1_Blue.png",
+            "_h1_white.png",
+            "_h1_yellow.png"
         ];
 
         let currentRevealIndex = -1;
