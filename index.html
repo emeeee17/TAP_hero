@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TAP Paint - Hero Section (Reliable)</title>
+    <title>TAP Paint - Hero Section</title>
     <!-- นำเข้าฟอนต์เพื่อความสวยงาม -->
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -44,7 +44,7 @@
             object-position: top center; 
         }
 
-        /* เลเยอร์สีฐาน (สีแดง) จะอยู่เป็นฐานตลอด */
+        /* เลเยอร์สีฐาน (สีแดง) */
         #layer-base {
             z-index: 1;
         }
@@ -101,11 +101,11 @@
     <div class="scroll-track" id="scrollTrack">
         <div class="hero-sticky">
             
-            <!-- Default Image (Red) จะอยู่เป็นฐานตลอด (ใช้ Public URL) -->
-            <img src="https://imagegen.visual-studio.com/v1/projects/c9f9ae61-00f7-4148-9c60-70588661645e/images/_h1_red_2.png" class="hero-img" id="layer-base" alt="Red House">
+            <!-- Default Image (Red) เป็นฐาน -->
+            <img src="_h1_red.png" class="hero-img" id="layer-base" alt="Red House">
             
-            <!-- Dynamic Reveal Image (ใช้ Public URL สำหรับสีเหลือง) -->
-            <img src="https://imagegen.visual-studio.com/v1/projects/c9f9ae61-00f7-4148-9c60-70588661645e/images/_h1_yellow_2.png" class="hero-img" id="layer-reveal" alt="Reveal House">
+            <!-- Dynamic Reveal Image (กำหนดสีแรกเป็น Yellow ตามที่ขอ) -->
+            <img src="_h1_yellow.png" class="hero-img" id="layer-reveal" alt="Reveal House">
 
             <!-- UI Text -->
             <div class="overlay-content">
@@ -124,23 +124,24 @@
         const scrollTrack = document.getElementById('scrollTrack');
         const layerReveal = document.getElementById('layer-reveal');
 
-        // รายการสีทั้งหมดโดยใช้ Public URL
+        // อ้างอิงชื่อไฟล์ภาพตามที่ระบุมาทั้งหมด
         const randomImages = [
-            "https://imagegen.visual-studio.com/v1/projects/c9f9ae61-00f7-4148-9c60-70588661645e/images/_h1_Blue_2.png",
-            "https://imagegen.visual-studio.com/v1/projects/c9f9ae61-00f7-4148-9c60-70588661645e/images/_h1_orange_2.png",
-            "https://imagegen.visual-studio.com/v1/projects/c9f9ae61-00f7-4148-9c60-70588661645e/images/_h1_sky_2.png",
-            "https://imagegen.visual-studio.com/v1/projects/c9f9ae61-00f7-4148-9c60-70588661645e/images/_h1_white_2.png",
-            "https://imagegen.visual-studio.com/v1/projects/c9f9ae61-00f7-4148-9c60-70588661645e/images/_h1_yellow_2.png"
+            "_h1_Blue.png",
+            "_h1_orange.png",
+            "_h1_red.png",
+            "_h1_sky.png",
+            "_h1_white.png",
+            "_h1_yellow.png"
         ];
 
-        // กำหนดให้การเลื่อนครั้งแรกเป็นสีเหลืองเสมอ (ใช้ URL)
-        let currentRevealColor = "https://imagegen.visual-studio.com/v1/projects/c9f9ae61-00f7-4148-9c60-70588661645e/images/_h1_yellow_2.png";
+        // กำหนดให้การเปลี่ยนสีครั้งแรกเป็นสีเหลือง
+        let currentRevealColor = "_h1_yellow.png";
         let isAtTop = true;
 
         // ฟังก์ชันสำหรับสุ่มสีบ้าน
         function setRandomRevealColor() {
             let nextColor;
-            // สุ่มจนกว่าจะไม่ได้สีเดิม
+            // สุ่มจนกว่าจะไม่ได้สีเดิม (ในกรณีที่เลื่อนขึ้นลงหลายรอบ)
             do {
                 const randomIndex = Math.floor(Math.random() * randomImages.length);
                 nextColor = randomImages[randomIndex];
@@ -154,6 +155,7 @@
         window.addEventListener('scroll', () => {
             const trackRect = scrollTrack.getBoundingClientRect();
             
+            // คำนวณระยะการ Scroll ภายในพื้นที่ของ scroll-track
             const maxScrollableHeight = trackRect.height - window.innerHeight;
             
             let scrollProgress = 0;
@@ -161,17 +163,18 @@
                 scrollProgress = Math.abs(trackRect.top) / maxScrollableHeight;
             }
 
-            // ปัดเศษระยะการเลื่อนเพื่อรีเซ็ตสี
+            // ปัดเศษให้ตอนเลื่อนขึ้นสุด/ลงสุดทำงานง่ายขึ้น สีจะได้ไม่ค้าง
             if (scrollProgress < 0.05) scrollProgress = 0;
             if (scrollProgress > 0.95) scrollProgress = 1;
 
+            // อัพเดต clip-path (ลดค่า inset ด้านล่างจาก 100% เหลือ 0% ตามการเลื่อน)
             const insetBottom = 100 - (scrollProgress * 100);
             layerReveal.style.clipPath = `inset(0 0 ${insetBottom}% 0)`;
 
-            // เช็คการเลื่อนกลับเพื่อเปลี่ยนสีบ้านสำหรับรอบหน้า
+            // ตรรกะเช็คการเลื่อนกลับไปบนสุดเพื่อเปลี่ยนสีบ้านสำหรับรอบหน้า
             if (scrollProgress === 0 && !isAtTop) {
                 isAtTop = true;
-                setRandomRevealColor(); 
+                setRandomRevealColor(); // สุ่มสีใหม่เมื่อกลับถึงบนสุด
             } else if (scrollProgress > 0) {
                 isAtTop = false;
             }
