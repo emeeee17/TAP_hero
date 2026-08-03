@@ -101,11 +101,11 @@
     <div class="scroll-track" id="scrollTrack">
         <div class="hero-sticky">
             
-            <!-- Default Image (Red) -->
-            <img src="_h1_red.png" class="hero-img" id="layer-base" alt="Red House">
+            <!-- Default Image (Red) จะอยู่เป็นฐานตลอด -->
+            <img src="_h1_red_2.png" class="hero-img" id="layer-base" alt="Red House">
             
-            <!-- Dynamic Reveal Image (Random Color) -->
-            <img src="" class="hero-img" id="layer-reveal" alt="Reveal House">
+            <!-- Dynamic Reveal Image (สีแรกกำหนดเป็น Yellow ก่อน) -->
+            <img src="_h1_yellow_2.png" class="hero-img" id="layer-reveal" alt="Reveal House">
 
             <!-- UI Text -->
             <div class="overlay-content">
@@ -124,42 +124,49 @@
         const scrollTrack = document.getElementById('scrollTrack');
         const layerReveal = document.getElementById('layer-reveal');
 
-        // อ้างอิงชื่อไฟล์ภาพในโฟลเดอร์เดียวกัน
+        // เพิ่มสีทั้งหมดตามที่ขอ (รวมส้มและ sky) โดยใช้ชื่อไฟล์ใหม่
         const randomImages = [
-            "_h1_Blue.png",
-            "_h1_white.png",
-            "_h1_yellow.png"
+            "_h1_Blue_2.png",
+            "_h1_orange_2.png",
+            "_h1_sky_2.png",
+            "_h1_white_2.png",
+            "_h1_yellow_2.png"
         ];
 
-        let currentRevealIndex = -1;
+        // กำหนดให้การเลื่อนครั้งแรกเป็นสีเหลืองเสมอ
+        let currentRevealColor = "_h1_yellow_2.png";
         let isAtTop = true;
 
         // ฟังก์ชันสำหรับสุ่มสีบ้าน
         function setRandomRevealColor() {
-            let nextIndex;
-            // สุ่มจนกว่าจะไม่ได้สีเดิม (ในกรณีที่เลื่อนขึ้นลงหลายรอบ)
+            let nextColor;
+            // สุ่มจนกว่าจะไม่ได้สีเดิม (ในกรณีที่เลื่อนขึ้นลงหลายรอบจะได้เห็นสีเปลี่ยนไปเรื่อยๆ)
             do {
-                nextIndex = Math.floor(Math.random() * randomImages.length);
-            } while (nextIndex === currentRevealIndex && randomImages.length > 1);
+                const randomIndex = Math.floor(Math.random() * randomImages.length);
+                nextColor = randomImages[randomIndex];
+            } while (nextColor === currentRevealColor);
             
-            currentRevealIndex = nextIndex;
-            layerReveal.src = randomImages[currentRevealIndex];
+            currentRevealColor = nextColor;
+            layerReveal.src = currentRevealColor;
         }
-
-        // เซ็ตสีแบบสุ่มตั้งแต่ครั้งแรกที่เปิดเว็บ
-        setRandomRevealColor();
 
         // ดักจับการ Scroll
         window.addEventListener('scroll', () => {
             const trackRect = scrollTrack.getBoundingClientRect();
             
-            // คำนวณระยะการ Scroll ภายในพื้นที่ของ scroll-track (จะได้ค่าระหว่าง 0 ถึง 1)
+            // คำนวณระยะการ Scroll ภายในพื้นที่ของ scroll-track
             const maxScrollableHeight = trackRect.height - window.innerHeight;
-            let scrollProgress = Math.abs(trackRect.top) / maxScrollableHeight;
+            
+            let scrollProgress = 0;
+            if (trackRect.top < 0) {
+                scrollProgress = Math.abs(trackRect.top) / maxScrollableHeight;
+            }
 
-            // ป้องกันค่าเกินขอบเขต
-            if (scrollProgress < 0) scrollProgress = 0;
-            if (scrollProgress > 1) scrollProgress = 1;
+            // [แก้ปัญหา]: ปัดเศษ % การเลื่อน 
+            // ถ้าเลื่อนกลับขึ้นไปเหลือแค่ < 5% (0.05) จะปัดเป็น 0 ทันที 
+            // ทำให้สีเปลี่ยนและรีเซ็ตใหม่ 100% แม้เลื่อนเมาส์กลับขึ้นไปไม่สุดแบบเป๊ะๆ
+            if (scrollProgress < 0.05) scrollProgress = 0;
+            if (scrollProgress > 0.95) scrollProgress = 1;
 
             // อัพเดต clip-path (ลดค่า inset ด้านล่างจาก 100% เหลือ 0% ตามการเลื่อน)
             const insetBottom = 100 - (scrollProgress * 100);
@@ -168,7 +175,7 @@
             // ตรรกะเช็คการเลื่อนกลับไปบนสุดเพื่อเปลี่ยนสีบ้านสำหรับรอบหน้า
             if (scrollProgress === 0 && !isAtTop) {
                 isAtTop = true;
-                setRandomRevealColor(); // สุ่มสีใหม่เมื่อกลับถึงบนสุด
+                setRandomRevealColor(); // สุ่มสีใหม่ทันทีที่ภาพถูกซ่อนมิด
             } else if (scrollProgress > 0) {
                 isAtTop = false;
             }
