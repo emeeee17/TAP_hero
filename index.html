@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TAP Paint - Hero Section (Mobile Optimized)</title>
+    <title>TAP Paint - Hero Section (Deep Zoom Mobile Optimized)</title>
     <!-- นำเข้าฟอนต์เพื่อความสวยงาม -->
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -39,28 +39,28 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            /* ปรับเป็น top left เพื่อเน้นมุมขวาบนในจอทุกขนาดเป็นค่าพื้นฐาน */
-            object-position: top left; 
+            /* ปรับเป็น top center เพื่อให้ตอนหมุนจอภาพหรือจอใหญ่ไม่ดูแปลก (optional) */
+            object-position: top center; 
             /* ใส่ Transition เล็กน้อยเพื่อให้ดูนุ่มนวลเวลาเปลี่ยนขนาดจอ */
-            transition: transform 0.3s ease, object-position 0.3s ease;
+            transition: transform 0.3s ease, object-position 0.3s ease, width 0.3s ease, height 0.3s ease;
         }
 
-        /* --- เพิ่ม Media Query สำหรับมือถือและจอแคบ --- */
+        /* --- แก้ไข Media Query สำหรับมือถือ (Deep Zoom) --- */
         @media (max-width: 768px) {
             .hero-img {
-                /* ในมือถือแนวตั้ง รูปแนวนอนจะถูกขยายให้เต็มความสูงของจอ (100vh) */
-                height: 100% !important;
-                /* และปล่อยความกว้างให้เกินหน้าจอออกไป (auto) เพื่อให้เกิดการซูมและ Crop */
-                width: auto !important;
-                max-width: none !important;
+                /* 1. บังคับซูมเน้น: ทำให้ภาพกว้างเป็น 3 เท่าของหน้าจอ */
+                width: 300% !important; 
+                height: auto !important; /* ปล่อยความสูงให้เป็น auto เพื่อคงสัดส่วนภาพ */
                 
-                /* จัดให้ชิดซ้ายบน */
+                max-width: none !important; /* ปลดล็อก max-width */
+
+                /* 2. จัดตำแหน่งเน้น ซ้ายบน: ดึงขอบซ้ายและขอบบนของภาพบ้านมาชนขอบหน้าจอเสมอ */
                 object-position: top left;
 
-                /* --- (Optional) ส่วนปรับแต่งเพิ่มเติม --- */
-                /* หากรู้สึกว่าชิดซ้ายเกินไป ให้เอาคอมเมนต์หน้า translateX ออก 
-                   แล้วปรับตัวเลข (ค่าลบคือขยับรูปไปทางซ้าย) */
-                /* transform: translateX(-15%); */
+                /* --- (แนะนำ) ปรับแต่งแนวตั้งเพื่อให้เห็นบรรไดนิดเดียว --- */
+                /* หากซูมเยอะมากจนบรรไดหายไปเลย ให้เอาคอมเมนต์หน้า translateX ออก 
+                   แล้วปรับตัวเลข (ค่าบวกขยับรูปขึ้น ค่าลบขยับรูปลง) */
+                /* transform: translateY(-3%); */ /* ตัวอย่าง: ขยับรูปลงมาเล็กน้อยเพื่อให้เห็นบรรได */
             }
             
             /* ปรับขนาดเนื้อหา Overlay ให้เล็กคอมือถือด้วย */
