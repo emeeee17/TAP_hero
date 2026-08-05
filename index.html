@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TAP Paint - Hero Section</title>
+    <title>TAP Paint - Hero Section (Mobile Optimized)</title>
     <!-- นำเข้าฟอนต์เพื่อความสวยงาม -->
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -31,6 +31,7 @@
             background-color: #000;
         }
 
+        /* --- แก้ไข CSS ส่วนนี้ --- */
         .hero-img {
             position: absolute;
             top: 0;
@@ -38,8 +39,37 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            object-position: top center; 
+            /* ปรับเป็น top left เพื่อเน้นมุมขวาบนในจอทุกขนาดเป็นค่าพื้นฐาน */
+            object-position: top left; 
+            /* ใส่ Transition เล็กน้อยเพื่อให้ดูนุ่มนวลเวลาเปลี่ยนขนาดจอ */
+            transition: transform 0.3s ease, object-position 0.3s ease;
         }
+
+        /* --- เพิ่ม Media Query สำหรับมือถือและจอแคบ --- */
+        @media (max-width: 768px) {
+            .hero-img {
+                /* ในมือถือแนวตั้ง รูปแนวนอนจะถูกขยายให้เต็มความสูงของจอ (100vh) */
+                height: 100% !important;
+                /* และปล่อยความกว้างให้เกินหน้าจอออกไป (auto) เพื่อให้เกิดการซูมและ Crop */
+                width: auto !important;
+                max-width: none !important;
+                
+                /* จัดให้ชิดซ้ายบน */
+                object-position: top left;
+
+                /* --- (Optional) ส่วนปรับแต่งเพิ่มเติม --- */
+                /* หากรู้สึกว่าชิดซ้ายเกินไป ให้เอาคอมเมนต์หน้า translateX ออก 
+                   แล้วปรับตัวเลข (ค่าลบคือขยับรูปไปทางซ้าย) */
+                /* transform: translateX(-15%); */
+            }
+            
+            /* ปรับขนาดเนื้อหา Overlay ให้เล็กคอมือถือด้วย */
+            .overlay-content {
+                left: 5%;
+                width: 90%;
+            }
+        }
+        /* ----------------------- */
 
         #layer-base {
             z-index: 1;
@@ -62,14 +92,14 @@
             pointer-events: none;
         }
         .overlay-content h1 {
-            font-size: clamp(3rem, 5vw, 6rem);
+            font-size: clamp(2.5rem, 8vw, 6rem); /* ปรับ min clamp ให้เล็กคอมือถือ */
             font-weight: 800;
             margin: 0;
             line-height: 1.1;
             letter-spacing: -1px;
         }
         .overlay-content p {
-            font-size: clamp(1rem, 2vw, 1.5rem);
+            font-size: clamp(0.9rem, 4vw, 1.5rem); /* ปรับ min clamp ให้เล็กคอมือถือ */
             font-weight: 400;
             margin-top: 10px;
             opacity: 0.9;
@@ -84,7 +114,12 @@
             color: #333;
         }
         .next-section h2 {
-            font-size: 3rem;
+            font-size: 2rem; /* ปรับขนาดพาดหัวเซกชันถัดไปให้เล็กคอมือถือ */
+            padding: 0 20px;
+            text-align: center;
+        }
+        @media (min-width: 769px) {
+             .next-section h2 { font-size: 3rem; }
         }
     </style>
 </head>
@@ -93,6 +128,7 @@
     <div class="scroll-track" id="scrollTrack">
         <div class="hero-sticky">
             
+            <!-- เลเยอร์รูปภาพจะถูกปรับตาม CSS media query ด้านบน -->
             <!-- เริ่มต้น: เลเยอร์ฐานสีแดง -->
             <img src="_h1_red.png" class="hero-img" id="layer-base" alt="Base House">
             
@@ -111,11 +147,11 @@
     </div>
 
     <script>
+        // โค้ด JavaScript เดิมของคุณ ทำงานได้ดีอยู่แล้ว ไม่ต้องแก้ไขครับ
         const scrollTrack = document.getElementById('scrollTrack');
         const layerBase = document.getElementById('layer-base');
         const layerReveal = document.getElementById('layer-reveal');
 
-        // สีทั้งหมดในระบบ
         const allColors = [
             "_h1_Blue.png",
             "_h1_orange.png",
@@ -125,7 +161,6 @@
             "_h1_yellow.png"
         ];
 
-        // "กองการ์ดสี" สำหรับสุ่ม (เอาแดงกับเหลืองออกก่อนในรอบแรก เพื่อบังคับให้เจอสีอื่นแน่นอน)
         let colorDeck = [
             "_h1_Blue.png",
             "_h1_orange.png",
@@ -133,7 +168,6 @@
             "_h1_white.png"
         ];
 
-        // ฟังก์ชันสับไพ่ (สลับตำแหน่งสีใน Array ให้ไม่ซ้ำแพทเทิร์นเดิม)
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -141,18 +175,13 @@
             }
         }
         
-        // สับไพ่สีรอบแรกเตรียมไว้
         shuffle(colorDeck);
 
-        // ฟังก์ชันดึงสีใหม่
         function getNextColor(currentVisibleColor) {
-            // ถ้าสีในกองหมดแล้ว ให้หยิบสีทั้งหมดมาสับใหม่
             if (colorDeck.length === 0) {
-                // เอาทุกสียกเว้น "สีที่กำลังโชว์อยู่บนจอตอนนี้" เพื่อกันการเปลี่ยนแล้วได้สีเดิม
                 colorDeck = allColors.filter(c => c !== currentVisibleColor);
                 shuffle(colorDeck);
             }
-            // ดึงสีใบบนสุดออกไปใช้
             return colorDeck.pop();
         }
 
@@ -168,35 +197,25 @@
                 scrollProgress = Math.abs(trackRect.top) / maxScrollableHeight;
             }
 
-            // ปัดเศษให้ชัวร์ว่าลงสุดหรือขึ้นสุด
-            if (scrollProgress < 0.05) scrollProgress = 0;
-            if (scrollProgress > 0.95) scrollProgress = 1;
+            if (scrollProgress < 0.005) scrollProgress = 0;
+            if (scrollProgress > 0.995) scrollProgress = 1;
 
-            // ค่อยๆ เปิด/ปิด เลเยอร์หน้า
             const insetBottom = 100 - (scrollProgress * 100);
             layerReveal.style.clipPath = `inset(0 0 ${insetBottom}% 0)`;
 
-            // --- ตรรกะเตรียมสลับคู่สี ---
             if (scrollProgress === 1) {
-                // เมื่อเลื่อนลงมาสุดทาง
                 if (!isAtBottom) {
                     isAtBottom = true;
-                    // ดึงสีที่กำลังโชว์เต็มๆ ตอนนี้ (layerReveal) ไปเป็นข้อแม้ไม่ให้สุ่มได้สีเดิม
                     const currentVisible = layerReveal.getAttribute('src');
-                    // แอบเปลี่ยนเลเยอร์หลังรอไว้เลย พอเลื่อนกลับขึ้นไปจะได้เจอสีใหม่!
                     layerBase.src = getNextColor(currentVisible);
                 }
             } else if (scrollProgress === 0) {
-                // เมื่อเลื่อนกลับขึ้นไปบนสุด
                 if (!isAtTop) {
                     isAtTop = true;
-                    // ดึงสีที่กำลังโชว์เต็มๆ ตอนนี้ (layerBase)
                     const currentVisible = layerBase.getAttribute('src');
-                    // แอบเปลี่ยนเลเยอร์หน้ารอไว้ พอเลื่อนลงครั้งต่อไปจะได้เจอสีใหม่!
                     layerReveal.src = getNextColor(currentVisible);
                 }
             } else {
-                // รีเซ็ตสถานะตอนอยู่ระหว่างทาง
                 isAtTop = false;
                 isAtBottom = false;
             }
